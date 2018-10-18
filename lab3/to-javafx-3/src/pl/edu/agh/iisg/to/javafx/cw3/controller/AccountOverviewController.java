@@ -2,8 +2,12 @@ package pl.edu.agh.iisg.to.javafx.cw3.controller;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 
+import com.sun.javafx.collections.ImmutableObservableList;
 import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -12,8 +16,10 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import pl.edu.agh.iisg.to.javafx.cw3.command.AddTransactionCommand;
 import pl.edu.agh.iisg.to.javafx.cw3.command.Command;
 import pl.edu.agh.iisg.to.javafx.cw3.command.CommandRegistry;
+import pl.edu.agh.iisg.to.javafx.cw3.command.RemoveTransactionsCommand;
 import pl.edu.agh.iisg.to.javafx.cw3.model.Account;
 import pl.edu.agh.iisg.to.javafx.cw3.model.Category;
 import pl.edu.agh.iisg.to.javafx.cw3.model.Transaction;
@@ -93,10 +99,12 @@ public class AccountOverviewController {
 
 	@FXML
 	private void handleDeleteAction(ActionEvent event) {
-		for (Transaction transaction : transactionsTable.getSelectionModel()
-				.getSelectedItems()) {
-			data.removeTransaction(transaction);
-		}
+
+        ObservableList<Transaction> l = FXCollections.observableArrayList(transactionsTable.getSelectionModel().getSelectedItems());
+
+        RemoveTransactionsCommand removeTransactionsCommand =
+                new RemoveTransactionsCommand(data, l);
+        commandRegistry.executeCommand(removeTransactionsCommand);
 	}
 
 	@FXML
@@ -113,7 +121,8 @@ public class AccountOverviewController {
 		Transaction transaction = Transaction.newTransaction();
 
 		if (appController.showTransactionEditDialog(transaction)) {
-			data.addTransaction(transaction);
+			AddTransactionCommand addTransactionCommand = new AddTransactionCommand(transaction, data);
+			commandRegistry.executeCommand(addTransactionCommand);
 		}
 	}
 
